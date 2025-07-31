@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - AWS Workshop Registration{% endblock %}
+
+{% block content %}
+<div class="grid grid-2">
+    <div class="card">
+        <h2><i class="fas fa-plus-circle"></i> Add New Workshop</h2>
+        <form method="POST" action="{{ url_for('add_workshop') }}">
+            <div class="grid grid-2">
+                <div class="form-group">
+                    <label for="date">Workshop Date</label>
+                    <input type="date" id="date" name="date" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="time">Workshop Time</label>
+                    <input type="time" id="time" name="time" class="form-control" required>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="topic">Workshop Topic</label>
+                <input type="text" id="topic" name="topic" class="form-control" 
+                       placeholder="e.g., AWS EC2 Fundamentals" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="instructor">Instructor Name</label>
+                <input type="text" id="instructor" name="instructor" class="form-control" 
+                       placeholder="e.g., John Smith" required>
+            </div>
+            
+            <div class="grid grid-2">
+                <div class="form-group">
+                    <label for="price">Price (Rs)</label>
+                    <input type="number" id="price" name="price" step="0.01" min="0" 
+                           class="form-control" placeholder="99.00" required>
+                </div>
+                <div class="form-group">
+                    <label for="max_participants">Max Participants</label>
+                    <input type="number" id="max_participants" name="max_participants" 
+                           min="1" class="form-control" value="50" required>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn">
+                <i class="fas fa-save"></i> Create Workshop
+            </button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2><i class="fas fa-qrcode"></i> Registration QR Code</h2>
+        <div style="text-align: center; margin: 20px 0;">
+            <img src="data:image/png;base64,{{ qr_code }}" alt="Registration QR Code" 
+                 style="max-width: 200px; border: 2px solid #ddd; border-radius: 10px;">
+        </div>
+        <p style="text-align: center; color: #666; margin-bottom: 20px;">
+            This QR code always links to the current active workshop
+        </p>
+        <div style="text-align: center;">
+            <a href="{{ url_for('register') }}" class="btn btn-secondary" target="_blank">
+                <i class="fas fa-external-link-alt"></i> View Registration Page
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2><i class="fas fa-calendar-alt"></i> Workshop Management</h2>
+        <div>
+            <a href="{{ url_for('view_registrations') }}" class="btn btn-secondary">
+                <i class="fas fa-users"></i> View Registrations ({{ current_registrations }})
+            </a>
+            <a href="{{ url_for('export_csv') }}" class="btn">
+                <i class="fas fa-download"></i> Export CSV
+            </a>
+        </div>
+    </div>
+
+    {% if workshops %}
+        <div class="grid grid-3">
+            {% for workshop in workshops %}
+            <div class="card" style="margin: 0;">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
+                    <h3 style="margin: 0; color: #232F3E;">{{ workshop[2] }}</h3>
+                    <span class="status-badge {{ 'status-active' if workshop[7] else 'status-inactive' }}">
+                        {{ 'Active' if workshop[7] else 'Inactive' }}
+                    </span>
+                </div>
+                
+                <div class="info-item">
+                    <i class="fas fa-calendar"></i>
+                    <span>{{ workshop[1] }} at {{ workshop[4] }}</span>
+                </div>
+                
+                <div class="info-item">
+                    <i class="fas fa-user-tie"></i>
+                    <span>{{ workshop[3] }}</span>
+                </div>
+                
+                <div class="info-item">
+                    <i class="fas fa-dollar-sign"></i>
+                    <span>${{ "%.2f"|format(workshop[5]) }}</span>
+                </div>
+                
+                <div class="info-item">
+                    <i class="fas fa-users"></i>
+                    <span>Max: {{ workshop[6] }} participants</span>
+                </div>
+                
+                {% if not workshop[7] %}
+                <div style="margin-top: 15px;">
+                    <a href="{{ url_for('activate_workshop', workshop_id=workshop[0]) }}" 
+                       class="btn" style="font-size: 0.9rem; padding: 8px 15px;">
+                        <i class="fas fa-play"></i> Activate
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div style="text-align: center; color: #666; padding: 40px;">
+            <i class="fas fa-calendar-plus" style="font-size: 3rem; margin-bottom: 20px; opacity: 0.5;"></i>
+            <p>No workshops created yet. Add your first workshop above!</p>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+    // Set today's date as default
+    document.getElementById('date').valueAsDate = new Date();
+    
+    // Real-time registration count update
+    function updateRegistrationCount() {
+        fetch('/api/workshop_status')
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'active') {
+                    // Update UI if needed
+                    console.log('Current registrations:', data.current_count);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
+    
+    // Update every 30 seconds
+    setInterval(updateRegistrationCount, 30000);
+</script>
+{% endblock %}

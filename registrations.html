@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}Workshop Registrations - AWS Workshop Registration{% endblock %}
+
+{% block content %}
+<style>
+    .status-badge {
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        display: inline-block;
+    }
+
+    .status-beginner {
+        background: #e1f5fe;
+        color: #0277bd;
+    }
+
+    .status-intermediate {
+        background: #f3e5f5;
+        color: #7b1fa2;
+    }
+
+    .status-advanced {
+        background: #e8f5e8;
+        color: #2e7d32;
+    }
+
+    .status-default {
+        background: #fff3e0;
+        color: #ef6c00;
+    }
+</style>
+
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+        <h2><i class="fas fa-users"></i> Workshop Registrations</h2>
+        <div>
+            <a href="{{ url_for('export_csv') }}" class="btn">
+                <i class="fas fa-download"></i> Export CSV
+            </a>
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    {% if registrations %}
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; background: white;">
+                <thead>
+                    <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+                        <th style="padding: 15px; text-align: left;">Name</th>
+                        <th style="padding: 15px; text-align: left;">Email</th>
+                        <th style="padding: 15px; text-align: left;">Phone</th>
+                        <th style="padding: 15px; text-align: left;">Company</th>
+                        <th style="padding: 15px; text-align: left;">Experience</th>
+                        <th style="padding: 15px; text-align: left;">Workshop</th>
+                        <th style="padding: 15px; text-align: left;">Date</th>
+                        <th style="padding: 15px; text-align: left;">Registered</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for reg in registrations %}
+                    <tr style="border-bottom: 1px solid #dee2e6;">
+                        <td style="padding: 15px;">{{ reg[1] }}</td>
+                        <td style="padding: 15px;">
+                            <a href="mailto:{{ reg[2] }}" style="color: #007bff; text-decoration: none;">
+                                {{ reg[2] }}
+                            </a>
+                        </td>
+                        <td style="padding: 15px;">{{ reg[3] or '-' }}</td>
+                        <td style="padding: 15px;">{{ reg[4] or '-' }}</td>
+                        <td style="padding: 15px;">
+                            <span class="status-badge 
+                                {% if reg[5] == 'Beginner' %}status-beginner
+                                {% elif reg[5] == 'Intermediate' %}status-intermediate
+                                {% elif reg[5] == 'Advanced' %}status-advanced
+                                {% else %}status-default{% endif %}">
+                                {{ reg[5] }}
+                            </span>
+                        </td>
+                        <td style="padding: 15px; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                            {{ reg[8] }}
+                        </td>
+                        <td style="padding: 15px;">{{ reg[9] }}</td>
+                        <td style="padding: 15px; font-size: 0.9rem; color: #666;">
+                            {{ reg[7][:19] if reg[7] else '-' }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; text-align: center;">
+            <strong>Total Registrations: {{ registrations|length }}</strong>
+        </div>
+    {% else %}
+        <div style="text-align: center; color: #666; padding: 40px;">
+            <i class="fas fa-user-slash" style="font-size: 3rem; margin-bottom: 20px; opacity: 0.5;"></i>
+            <p>No registrations yet. Share your QR code to get started!</p>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+    function addSearchBox() {
+        const table = document.querySelector('table');
+        if (!table) return;
+
+        const searchBox = document.createElement('div');
+        searchBox.innerHTML = `
+            <div style="margin-bottom: 20px;">
+                <input type="text" id="searchInput" placeholder="Search registrations..."
+                       style="padding: 10px 15px; border: 2px solid #e1e5e9; border-radius: 8px; width: 300px; font-size: 1rem;">
+            </div>
+        `;
+        table.parentNode.insertBefore(searchBox, table);
+
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', addSearchBox);
+</script>
+{% endblock %}

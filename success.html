@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Registration Successful - AWS Workshop{% endblock %}
+
+{% block content %}
+<div class="card" style="text-align: center; max-width: 600px; margin: 0 auto;">
+    <div style="color: #28a745; font-size: 4rem; margin-bottom: 20px;">
+        <i class="fas fa-check-circle"></i>
+    </div>
+    
+    <h2 style="color: #28a745; margin-bottom: 20px;">Registration Successful!</h2>
+    
+    <p style="font-size: 1.2rem; margin-bottom: 30px;">
+        Thank you, <strong>{{ name }}</strong>! You have successfully registered for the AWS workshop.
+    </p>
+    
+    <div class="workshop-info" style="text-align: left; margin: 30px 0;">
+        <h3><i class="fas fa-aws"></i> Workshop Details</h3>
+        
+        <div class="info-item">
+            <i class="fas fa-calendar"></i>
+            <span><strong>Topic:</strong> {{ workshop[2] }}</span>
+        </div>
+        
+        <div class="info-item">
+            <i class="fas fa-calendar"></i>
+            <span><strong>Date:</strong> {{ workshop[1] }}</span>
+        </div>
+        
+        <div class="info-item">
+            <i class="fas fa-clock"></i>
+            <span><strong>Time:</strong> {{ workshop[4] }}</span>
+        </div>
+        
+        <div class="info-item">
+            <i class="fas fa-user-tie"></i>
+            <span><strong>Instructor:</strong> {{ workshop[3] }}</span>
+        </div>
+        
+        <div class="info-item">
+            <i class="fas fa-dollar-sign"></i>
+            <span><strong>Fee:</strong> ${{ "%.2f"|format(workshop[5]) }}</span>
+        </div>
+    </div>
+    
+    <div style="background: #e3f2fd; padding: 20px; border-radius: 10px; margin: 30px 0; text-align: left;">
+        <h4 style="color: #1565c0; margin-bottom: 15px;">
+            <i class="fas fa-info-circle"></i> What's Next?
+        </h4>
+        <ul style="margin-left: 20px; color: #333;">
+            <li>Check your email for payment instructions and workshop details</li>
+            <li>Complete payment within 24 hours to secure your spot</li>
+            <li>Join the workshop 15 minutes early for technical setup</li>
+            <li>Prepare any questions you'd like to ask during the session</li>
+        </ul>
+    </div>
+    
+    <div style="margin-top: 30px;">
+        <a href="{{ url_for('register') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Registration
+        </a>
+        
+        <a href="mailto:support@awsworkshops.com" class="btn" style="margin-left: 10px;">
+            <i class="fas fa-envelope"></i> Contact Support
+        </a>
+    </div>
+    
+    <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+        <p style="color: #6c757d; font-size: 0.9rem; margin: 0;">
+            <i class="fas fa-shield-alt"></i>
+            Your registration information is secure and will only be used for workshop-related communications.
+        </p>
+    </div>
+</div>
+
+<script>
+    // Auto-scroll to top and add celebration effect
+    window.scrollTo(0, 0);
+    
+    // Optional: Add confetti effect (you can include a confetti library)
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkIcon = document.querySelector('.fa-check-circle');
+        checkIcon.style.animation = 'bounce 1s ease-in-out';
+        
+        // Add bounce animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes bounce {
+                0%, 20%, 50%, 80%, 100% {
+                    transform: translateY(0);
+                }
+                40% {
+                    transform: translateY(-10px);
+                }
+                60% {
+                    transform: translateY(-5px);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    });
+</script>
+{% endblock %}

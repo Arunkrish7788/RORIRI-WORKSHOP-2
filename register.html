@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block title %}Register for AWS Workshop{% endblock %}
+
+{% block content %}
+<div class="grid grid-2">
+    <div class="workshop-info">
+        <h3><i class="fas fa-aws"></i> {{ workshop.topic }}</h3>
+        
+        <div class="info-item">
+            <i class="fas fa-calendar"></i>
+            <span><strong>Date:</strong> {{ workshop.date }}</span>
+        </div>
+        
+        <div class="info-item">
+            <i class="fas fa-clock"></i>
+            <span><strong>Time:</strong> {{ workshop.time }}</span>
+        </div>
+        
+        <div class="info-item">
+            <i class="fas fa-user-tie"></i>
+            <span><strong>Instructor:</strong> {{ workshop.instructor }}</span>
+        </div>
+        
+        <div class="info-item">
+            <i class="fas fa-dollar-sign"></i>
+            <span><strong>Price:</strong> ${{ "%.2f"|format(workshop.price) }}</span>
+        </div>
+        
+        <div class="info-item">
+            <i class="fas fa-users"></i>
+            <span><strong>Availability:</strong> {{ workshop.max_participants - current_count }} spots remaining 
+                  ({{ current_count }}/{{ workshop.max_participants }})</span>
+        </div>
+        
+        <div style="margin-top: 20px; padding: 15px; background: rgba(255,255,255,0.8); border-radius: 8px;">
+            <h4 style="color: #1565c0; margin-bottom: 10px;">
+                <i class="fas fa-info-circle"></i> What You'll Learn:
+            </h4>
+            <ul style="margin-left: 20px; color: #333;">
+                <li>Hands-on AWS service implementation</li>
+                <li>Best practices and real-world scenarios</li>
+                <li>Interactive Q&A with certified instructor</li>
+                <li>Certificate of completion</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2><i class="fas fa-user-plus"></i> Registration Form</h2>
+        
+        {% if current_count >= workshop.max_participants %}
+            <div class="alert alert-error">
+                <i class="fas fa-exclamation-triangle"></i>
+                Sorry, this workshop is fully booked! Please check back for future sessions.
+            </div>
+        {% else %}
+            <form method="POST" id="registrationForm">
+                <div class="form-group">
+                    <label for="name">Full Name *</label>
+                    <input type="text" id="name" name="name" class="form-control" 
+                           placeholder="Enter your full name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email Address *</label>
+                    <input type="email" id="email" name="email" class="form-control" 
+                           placeholder="your.email@example.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" id="phone" name="phone" class="form-control" 
+                           placeholder="91+">
+                </div>
+                
+                <div class="form-group">
+                    <label for="College">College</label>
+                    <input type="text" id="College" name="College" class="form-control" 
+                           placeholder="Your College name">
+                </div>
+                
+                <div class="form-group">
+                    <label for="experience">Choose Course *</label>
+                    <select id="experience" name="experience" class="form-control" required>
+                        <option value="">select</option>
+                        <option value="Beginner">AWS</option>
+                        <option value="Intermediate">Full Stack Developer</option>
+                        <option value="Advanced">Data Science</option>
+                        <option value="Expert">Frontend Developer</option>
+                    </select>
+                </div>
+                
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                    <h4 style="color: #495057; margin-bottom: 10px;">
+                        <i class="fas fa-credit-card"></i> Payment Information
+                    </h4>
+                    <p style="color: #6c757d; margin-bottom: 10px;">
+                        Workshop Fee: <strong>${{ "%.2f"|format(workshop.price) }}</strong>
+                    </p>
+                    <p style="color: #6c757d; font-size: 0.9rem;">
+                        Payment instructions will be sent to your email after registration.
+                    </p>
+                </div>
+                
+                <button type="submit" class="btn" style="width: 100%; font-size: 1.1rem; padding: 15px;">
+                    <i class="fas fa-check-circle"></i> Register for Workshop
+                </button>
+            </form>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    // Form validation and enhancement
+    document.getElementById('registrationForm')?.addEventListener('submit', function(e) {
+        const name = document.getElementById('name').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const experience = document.getElementById('experience').value;
+        
+        if (!name || !email || !experience) {
+            e.preventDefault();
+            alert('Please fill in all required fields.');
+            return;
+        }
+        
+        // Show loading state
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+        submitBtn.disabled = true;
+        
+        // Reset if form validation fails
+        setTimeout(() => {
+            if (!this.checkValidity()) {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        }, 100);
+    });
+    
+    // Real-time availability check
+    function checkAvailability() {
+        fetch('/api/workshop_status')
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'active') {
+                    const availabilityElement = document.querySelector('.info-item:last-of-type span');
+                    if (availabilityElement) {
+                        availabilityElement.innerHTML = `<strong>Availability:</strong> ${data.spots_remaining} spots remaining (${data.current_count}/${data.max_participants})`;
+                    }
+                    
+                    // Disable form if full
+                    if (data.spots_remaining <= 0) {
+                        location.reload();
+                    }
+                }
+            })
+            .catch(error => console.error('Error checking availability:', error));
+    }
+    
+    // Check availability every 30 seconds
+    setInterval(checkAvailability, 30000);
+</script>
+{% endblock %}
